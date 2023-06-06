@@ -1,5 +1,6 @@
 package br.senai.sp.jandira.lionschool.gui
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -9,27 +10,28 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import br.senai.sp.jandira.lionschool.ui.theme.LionSchoolTheme
 import br.senai.sp.jandira.lionschool.R
-import br.senai.sp.jandira.lionschool.model.Cursos
-import br.senai.sp.jandira.lionschool.model.CursosList
+import br.senai.sp.jandira.lionschool.model.Course
+import br.senai.sp.jandira.lionschool.model.CourseList
 import br.senai.sp.jandira.lionschool.service.RetrofitFactory
-import coil.compose.AsyncImage
+import br.senai.sp.jandira.lionschool.ui.theme.LionSchoolTheme
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -39,11 +41,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             LionSchoolTheme {
+                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    HomeScreen()
+                    CoursesScreen()
                 }
             }
         }
@@ -51,10 +54,13 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun HomeScreen() {
-    var cursos by remember {
-        mutableStateOf(listOf<Cursos>())
+fun CoursesScreen() {
+
+    var course by remember{
+        mutableStateOf(listOf<Course>())
     }
+
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -116,66 +122,57 @@ fun HomeScreen() {
                         modifier = Modifier.padding(5.dp),
 
                         )
-                }   
-                
-
-
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        val call = RetrofitFactory().getCursoService().getCursos()
-                        call.enqueue(object : Callback<CursosList> {
-                            override fun onResponse(
-                                call: Call<CursosList>,
-                                response: Response<CursosList>
-                            ) {
-                                cursos = response.body()!!.cursos
-
-                            }
-
-                            override fun onFailure(call: Call<CursosList>, t: Throwable) {
-                                Log.i(
-                                    "ds2m",
-                                    "onFailure: ${t.message}"
-
-                                )
-                            }
-
-                        })
-
-
-                        items(cursos) {
-
-                                Button(modifier = Modifier
-                                    .padding(15.dp)
-                                    .width(180.dp)
-                                    .height(72.dp),
-                                    onClick = { /*TODO*/ }) {
-                                    Text(
-                                        text = it.sigla,
-                                        fontSize = 24.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                        AsyncImage(model = it.icone, contentDescription = "simbolo")
-
-
-                        }
-
-                    }
                 }
 
+                LazyColumn(    modifier = Modifier
+                    .fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ){
+
+                    val call = RetrofitFactory().getCourseService().getCourse()
+
+                    call.enqueue(object : Callback<CourseList>{
+                        override fun onResponse(
+                            call: Call<CourseList>,
+                            response: Response<CourseList>
+                        ) {
+                            course = response.body()!!.course
+                        }
+
+                        override fun onFailure(call: Call<CourseList>, t: Throwable) {
+                            Log.i("ds2m","onFailure: ${t.message}")
+                        }
+                    })
+                    items(course){
+                        Button(modifier = Modifier
+                            .padding(15.dp)
+                            .width(250.dp)
+                            .height(70.dp),
+                            shape = CircleShape,
+                            onClick = {
+                                val openNext = Intent(context, ClassActivity2::class.java)
+                                context.startActivity(openNext)
+                            }) {
+
+                            Text(
+                                text = it.sigla,
+                                fontSize = 30.sp,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            )
+                    }
+                }
             }
         }
-    }
+    }}
+
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun DefaultPreview() {
     LionSchoolTheme {
-        HomeScreen()
+        CoursesScreen()
     }
 }
