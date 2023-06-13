@@ -8,6 +8,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
@@ -23,10 +24,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import br.senai.sp.jandira.lionschool.R
+import br.senai.sp.jandira.lionschool.model.Category
 import br.senai.sp.jandira.lionschool.model.Student
 import br.senai.sp.jandira.lionschool.model.StudentList
 import br.senai.sp.jandira.lionschool.service.RetrofitFactory
 import br.senai.sp.jandira.lionschool.ui.theme.LionSchoolTheme
+import br.senai.sp.jandira.loginapp.repository.CategoryRepository
 import coil.compose.AsyncImage
 import retrofit2.Call
 import retrofit2.Callback
@@ -42,7 +45,7 @@ class ClassActivity2 : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    ClassScreen()
+                    ClassScreen(CategoryRepository.getCategories())
                 }
             }
         }
@@ -50,7 +53,7 @@ class ClassActivity2 : ComponentActivity() {
 }
 
 @Composable
-fun ClassScreen() {
+fun ClassScreen(categories: List<Category>) {
 
     var student by remember {
         mutableStateOf(listOf<Student>())
@@ -60,6 +63,7 @@ fun ClassScreen() {
         modifier = Modifier
             .fillMaxSize()
             .background(Color(248, 248, 248))
+            .padding(50.dp)
     ) {
         Row(
             modifier = Modifier
@@ -76,6 +80,31 @@ fun ClassScreen() {
             )
         }
         Spacer(modifier = Modifier.height(3.dp))
+
+        LazyRow() {
+            items(categories) {
+                Card(
+                    modifier = Modifier
+                        .size(width = 120.dp, height = 100.dp)
+                        .padding(vertical = 8.dp, horizontal = 4.dp),
+                    backgroundColor = Color(207, 6, 240)
+                ) {
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+
+                        Text(
+                            text = it.categoryName,
+                            fontSize = 14.sp,
+                            color = Color.Transparent
+                        )
+                    }
+                }
+            }
+        }
+
 
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
@@ -122,6 +151,8 @@ fun ClassScreen() {
 @Composable
 fun DefaultPreview2() {
     LionSchoolTheme {
-        ClassScreen()
+        ClassScreen(
+            CategoryRepository.getCategories()
+        )
     }
 }
